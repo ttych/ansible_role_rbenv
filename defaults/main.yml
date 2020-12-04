@@ -1,2 +1,33 @@
 ---
-# defaults file for ansible_role_rbenv
+
+rbenv_repository_organization: https://github.com/rbenv
+
+rbenv_rbenv_repository: "{{ rbenv_repository_organization }}/rbenv.git"
+rbenv_rbenv_version: master
+
+rbenv_ruby-build_repository: "{{ rbenv_repository_organization }}/ruby-build.git"
+rbenv_ruby-build_version: master
+
+rbenv_rbenv-vars_repository: "{{ rbenv_repository_organization }}/rbenv-vars.git"
+rbenv_rbenv-vars_version: master
+
+rbenv_rbenv-each_repository: "{{ rbenv_repository_organization }}/rbenv-each.git"
+rbenv_rbenv-each_version: master
+
+rbenv_rbenv-default-gems_repository: "{{ rbenv_repository_organization }}/rbenv-default-gems.git"
+rbenv_rbenv-default-gems_version: master
+
+rbenv_plugins:
+  - ruby-build
+  - rbenv-vars
+  - rbenv-each
+  - rbenv-default-gems
+
+rbenv_ruby_version: 2.7.2
+
+rbenv_gem_sources:
+  - https://rubygems.org/
+
+rbenv_gem_defaults:
+  - bundler
+  - rake

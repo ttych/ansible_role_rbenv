@@ -1,2 +1,42 @@
 ---
-# tasks file for ansible_role_rbenv
+
+- block:
+    - name: guess who am I
+      shell: whoami
+      register: whoami
+      changed_when: no
+      check_mode: no
+
+    - name: get my homedir
+      shell: "getent passwd {{ whoami.stdout }} | awk -F: '{print $6 }'"
+      changed_when: no
+      register: rbenv_homedir
+
+    - name: set rbenv_homedir
+      set_fact:
+        rbenv_root: "{{ rbenv_homedir.stdout }}/.rbenv"
+
+  when: rbenv_root is not defined or rbenv_root == ""
+
+- name: install_rbenv
+  include_tasks: install_rbenv.yml
+
+- name: install ruby
+  include_tasks: install_ruby.yml
+
+- name: install gem
+  include_tasks: install_gem.yml
+
+
+
+
+# clone rbenv pull / master
+#
+#  next if test :gem, :query, '--quiet --installed --name-matches ^bundler$'
+# gem install bundler --quiet --no-rdoc --no-ri
+#
+# set :rbenv_type               # :user or :system
+# set :rbenv_ruby, '2.0.0-p247' # ruby version
+# set :rbenv_roles, :all        # where rbenv should be installed
+# set :rbenv_path,              # ~/.rbenv or /usr/local/rbenv, depends on :rbenv_type
+# set :rbenv_ruby_dir           # "#{fetch(:rbenv_path)}/versions/#{fetch(:rbenv_ruby)}" }

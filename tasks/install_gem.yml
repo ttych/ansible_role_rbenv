@@ -1,0 +1,54 @@
+---
+
+- name: get current sources
+  shell: "gem sources -q -l | egrep -v '^$|^[*]+ CURRENT SOURCES [*]+$'"
+  environment:
+    PATH: "{{ rbenv_root }}/bin:{{ rbenv_root }}/shims:{{ lookup('env', 'PATH') }}"
+    RBENV_ROOT: "{{ rbenv_root }}"
+  failed_when: no
+  changed_when: no
+  register: t_rbenv_gem_sources_current
+
+- name: extract current sources
+  set_fact:
+    t_rbenv_gem_sources_current: "{{ t_rbenv_gem_sources_current.stdout_lines }}"
+
+- name: compute sources updates
+  set_fact:
+    t_rbenv_gem_sources_to_add: "{{ rbenv_gem_sources|difference(t_rbenv_gem_sources_current) }}"
+    t_rbenv_gem_sources_to_remove: "{{ t_rbenv_gem_sources_current|difference(rbenv_gem_sources) }}"
+
+- name: add exepected sources
+  shell: "gem sources --add {{ item }}"
+  environment:
+    PATH: "{{ rbenv_root }}/bin:{{ rbenv_root }}/shims:{{ lookup('env', 'PATH') }}"
+    RBENV_ROOT: "{{ rbenv_root }}"
+  loop: "{{ t_rbenv_gem_sources_to_add }}"
+
+- name: remove unexpected sources
+  shell: "gem sources --remove {{ item }}"
+  environment:
+    PATH: "{{ rbenv_root }}/bin:{{ rbenv_root }}/shims:{{ lookup('env', 'PATH') }}"
+    RBENV_ROOT: "{{ rbenv_root }}"
+  loop: "{{ t_rbenv_gem_sources_to_remove }}"
+
+#
+
+- name: check default gems
+  shell: "gem list -i '^{{ item }}$'"
+  # shell: "gem query --quiet --installed --name-matches ^{{ item }}$'
+  environment:
+    PATH: "{{ rbenv_root }}/bin:{{ rbenv_root }}/shims:{{ lookup('env', 'PATH') }}"
+    RBENV_ROOT: "{{ rbenv_root }}"
+  failed_when: no
+  changed_when: no
+  loop: "{{ rbenv_gem_defaults }}"
+  register: t_rbenv_gem_defaults
+
+- name: install default gems
+  shell: "gem install --no-rdoc --no-ri {{ item.0 }}"
+  environment:
+    PATH: "{{ rbenv_root }}/bin:{{ rbenv_root }}/shims:{{ lookup('env', 'PATH') }}"
+    RBENV_ROOT: "{{ rbenv_root }}"
+  loop: "{{ rbenv_gem_defaults|zip(t_rbenv_gem_defaults.results)|list }}"
+  when: item.1.rc != 0
