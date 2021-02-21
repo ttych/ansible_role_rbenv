@@ -1,0 +1,41 @@
+---
+
+- block:
+    - name: check shell profile files
+      stat:
+        path: "{{ rbenv_homedir.stdout }}/{{ item }}"
+      register: rbenv_profile_stat
+      loop:
+        - .profile
+        - .bash_profile
+        - .zprofile
+        - .bashrc
+        - .zshrc
+
+    - name: find shell profile
+      set_fact:
+        rbenv_shell_profile: "{{ (rbenv_profile_stat.results | selectattr('stat.exists') | first)['stat']['path'] }}"
+      ignore_errors: yes
+
+    - name: use default shell profile
+      set_fact:
+        rbenv_shell_profile: "{{ rbenv_homedir.stdout }}/.profile"
+      when: rbenv_shell_profile is not defined or rbenv_shell_profile == ''
+
+    - name: set rbenv profile
+      lineinfile:
+        path: "{{ rbenv_shell_profile }}"
+        owner: "{{ whoami.stdout }}"
+        mode: '0600'
+        create: yes
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+      loop:
+        - regexp: '^export PATH="{{ rbenv_root }}\/bin:\$PATH"'
+          line: 'export PATH="{{ rbenv_root }}/bin:$PATH"'
+        - regexp: '^export RBENV_ROOT="{{ rbenv_root }}"'
+          line: 'export RBENV_ROOT="{{ rbenv_root }}"'
+        - regexp: '^eval "\$\(rbenv init -\)"'
+          line: 'eval "$(rbenv init -)"'
+
+  when: rbenv_in_profile

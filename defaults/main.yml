@@ -31,3 +31,5 @@ rbenv_gem_sources:
 rbenv_gem_defaults:
   - bundler
   - rake
+
+rbenv_in_profile: no

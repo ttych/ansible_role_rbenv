@@ -21,6 +21,9 @@
 - name: install_rbenv
   include_tasks: install_rbenv.yml
 
+- name: update_profile
+  include_tasks: update_profile.yml
+
 - name: install ruby
   include_tasks: install_ruby.yml
 
