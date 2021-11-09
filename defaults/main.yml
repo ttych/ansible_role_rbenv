@@ -23,7 +23,7 @@ rbenv_plugins:
   - rbenv-each
   - rbenv-default-gems
 
-rbenv_ruby_version: 2.7.2
+rbenv_ruby_version: 3.0.2
 
 rbenv_gem_sources:
   - https://rubygems.org/
